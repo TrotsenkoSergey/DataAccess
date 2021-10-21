@@ -1,0 +1,105 @@
+﻿<Window x:Class="WPF_DataAccess.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WPF_DataAccess"
+        mc:Ignorable="d"
+        Title="DataAccess" Height="550" Width="1100"
+        MinHeight="550" MinWidth="1100">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="12.5*"/>
+            <ColumnDefinition Width="12.5*"/>
+            <ColumnDefinition Width="12.5*"/>
+            <ColumnDefinition Width="12.5*"/>
+            <ColumnDefinition Width="25*"/>
+            <ColumnDefinition Width="25*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25*"/>
+            <RowDefinition Height="25*"/>
+            <RowDefinition Height="25*"/>
+            <RowDefinition Height="25*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Column="4" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2">
+            <WrapPanel>
+                <TextBlock Text="Enter userID:" Margin="5 5 5 5"/>
+                <TextBox x:Name="textBoxUserId" MinWidth="100" Margin="5 5 5 5" 
+                         TextWrapping="NoWrap" Text = "user1" ToolTip="user1"/>
+            </WrapPanel>
+            <WrapPanel>
+                <TextBlock Text="Enter password:" Margin="5 5 5 5" />
+                <PasswordBox x:Name="textBoxPassword" MinWidth="100" Margin="5 5 5 5" ToolTip="user1"/>
+            </WrapPanel>
+            <Button Content="Connect to DB" Width="100" Click="ConnectToDB" Margin="5 5 5 5"></Button>
+            <WrapPanel>
+                <TextBlock Text="Connection MSSQL state:" Margin="5 5 5 5"/>
+                <TextBlock x:Name="textBlockSQLConnState" Margin="5 5 5 5"/>
+            </WrapPanel>
+            <WrapPanel>
+                <TextBlock Text="Connection AccessDB state:" Margin="5 5 5 5"/>
+                <TextBlock x:Name="textBlockAccessConnState" Margin="5 5 5 5"/>
+            </WrapPanel>
+            <WrapPanel>
+                <TextBlock Text="Connection string MSSQL: " Margin="5 5 5 5"/>
+                <TextBlock x:Name="textBlockSQLConnString" TextWrapping="Wrap" Margin="5 5 5 5"/>
+            </WrapPanel>
+            <WrapPanel>
+                <TextBlock Text="Connection string Access: " Margin="5 5 5 5"/>
+                <TextBlock x:Name="textBlockAccessConnString" TextWrapping="Wrap" Margin="5 5 5 5"/>
+            </WrapPanel>
+        </StackPanel>
+
+        <StackPanel Grid.Column="0" Grid.Row="0" Margin="5 5 5 5">
+            <TextBlock Text="Enter user FirstName:" Margin="5 5 5 5"/>
+            <TextBlock Text="Enter user LastName:" Margin="5 5 5 5"/>
+            <TextBlock Text="Enter user Phone:" Margin="5 5 5 5"/>
+            <TextBlock Text="Enter user Email:" Margin="5 5 5 5"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Grid.Row="0" Margin="5 5 5 5">
+            <TextBox x:Name="textBoxUserFirstName" MinWidth="100" Margin="5 5 5 5" />
+            <TextBox x:Name="textBoxUserLastName" MinWidth="100" Margin="5 5 5 5" />
+            <TextBox x:Name="textBoxUserPhone" MinWidth="100" Margin="5 5 5 5" />
+            <TextBox x:Name="textBoxUserEmail" MinWidth="100" Margin="5 5 5 5" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Grid.Row="1" Margin="5 5 5 5">
+            <Button x:Name="buttonUserFormInsert" Content="INSERT" Margin="5 5 5 5"
+                    HorizontalAlignment="Center" Width="100"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Grid.Row="0" Margin="5 5 5 5">
+            <TextBlock Text="Enter user Email:" Margin="5 5 5 5"/>
+            <TextBlock Text="Enter product Name:" Margin="5 5 5 5"/>
+            <TextBlock Text="Enter product Code:" Margin="5 5 5 5"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="3" Grid.Row="0" Margin="5 5 5 5">
+            <TextBox x:Name="textBoxCustomerEmail" MinWidth="100" Margin="5 5 5 5" />
+            <TextBox x:Name="textBoxProductName" MinWidth="100" Margin="5 5 5 5" />
+            <TextBox x:Name="textBoxProductCode" MinWidth="100" Margin="5 5 5 5" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="3" Grid.Row="1" Margin="5 5 5 5">
+            <Button x:Name="buttonProductFormInsert" Content="INSERT" Margin="5 5 5 5"
+                    HorizontalAlignment="Center" Width="100"/>
+        </StackPanel>
+
+        <!--<Border Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="0" Grid.RowSpan="2"
+               BorderBrush="Black" BorderThickness="1" />
+        <Border Grid.Column="4" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
+               BorderBrush="Black" BorderThickness="1" />-->
+        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
+               BorderBrush="Black" BorderThickness="0.5" CornerRadius="10"
+                Margin="5 5 5 5"/>
+        <Border Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
+               BorderBrush="Black" BorderThickness="0.5" CornerRadius="10"
+                Margin="5 5 5 5"/>
+        
+        
+
+    </Grid>
+</Window>
