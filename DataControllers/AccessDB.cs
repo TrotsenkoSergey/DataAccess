@@ -1,5 +1,6 @@
 ﻿using System.Data.OleDb;
 using System.Data;
+using System.Data.Common;
 
 namespace DataControllers
 {
@@ -7,8 +8,9 @@ namespace DataControllers
     {
         OleDbConnection connection;
         OleDbCommand command;
-        OleDbDataAdapter dataAdapter;
+        OleDbDataAdapter dataAdapter = new OleDbDataAdapter();
         DataTable dateTable;
+
         public AccessDB(string accessConnectionString)
         {
             connection = new OleDbConnection(accessConnectionString);
@@ -22,5 +24,7 @@ namespace DataControllers
         {
             return command = new OleDbCommand(sqlScript, connection);
         }
+
+        public OleDbDataAdapter DataAdapter { get; set; }
     }
 }
