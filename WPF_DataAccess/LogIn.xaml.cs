@@ -26,7 +26,8 @@ namespace WPF_DataAccess
 
         private void LogIn(object sender, EventArgs e)
         {
-            if (!String.IsNullOrEmpty(textBoxUserId.Text) && !String.IsNullOrEmpty(textBoxPassword.Password))
+            if (!String.IsNullOrEmpty(textBoxUserId.Text) && 
+                !String.IsNullOrEmpty(textBoxPassword.Password))
                 Close();
         }
     }

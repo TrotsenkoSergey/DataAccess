@@ -26,11 +26,9 @@ namespace WPF_DataAccess
     public partial class MainWindow : Window
     {
         private SQLServerDB sqlServerDB;
-        private DataTable usersDataTable;
         private DataRowView usersRow;
 
         private AccessDB accessDB;
-        private DataTable productsDataTable;
         private DataRowView productsRow;
 
         public MainWindow()
@@ -47,6 +45,12 @@ namespace WPF_DataAccess
             string userID = logInWindow.textBoxUserId.Text;
             string password = logInWindow.textBoxPassword.Password;
 
+            PreparingSQLServerDB(userID, password);
+            PreparingAccessDB();
+        }
+
+        private void PreparingSQLServerDB(string userID, string password)
+        {
             sqlServerDB = new SQLServerDB(userID, password);
 
             textBlockSQLConnString.Text = sqlServerDB.ConnectionString;
@@ -95,6 +99,55 @@ namespace WPF_DataAccess
             sqlServerDB.DataAdapter.DeleteCommand.Parameters.Add("@ID", SqlDbType.Int, 4, "ID");
         }
 
+        private void PreparingAccessDB()
+        {
+            accessDB = new AccessDB();
+
+            textBlockAccessConnString.Text = accessDB.ConnectionString;
+
+            accessDB.Connection.StateChange +=
+                new StateChangeEventHandler(OnStateChange);
+
+            accessDB.Command(@"SELECT * FROM Products Order By Products.ID");
+            accessDB.DataAdapter.SelectCommand = accessDB.CommandLast;
+
+            accessDB.Command(@"INSERT INTO Products     ( EmailCustomer,  ProductName,  ProductCode) 
+                                      VALUES            (?, ?, ?)");
+            accessDB.DataAdapter.InsertCommand = accessDB.CommandLast;
+            //accessDB.DataAdapter.InsertCommand.Parameters.Add(
+            //    "@ID", OleDbType.Char, 4, "ID").Direction = ParameterDirection.Output;
+            accessDB.DataAdapter.InsertCommand.Parameters.Add(
+                "@EmailCustomer", OleDbType.VarChar, 30, "EmailCustomer");
+            accessDB.DataAdapter.InsertCommand.Parameters.Add(
+                "@ProductName", OleDbType.VarChar, 30, "ProductName");
+            accessDB.DataAdapter.InsertCommand.Parameters.Add(
+                "@ProductCode", OleDbType.VarChar, 30, "ProductCode");
+
+            accessDB.Command(@"UPDATE Products 
+                                  SET 
+                                  EmailCustomer = @EmailCustomer,
+                                  ProductName = @ProductName, 
+                                  ProductCode = @ProductCode
+                                  WHERE ID = @ID");
+            accessDB.DataAdapter.UpdateCommand = accessDB.CommandLast;
+            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
+                "@ID", OleDbType.Integer, 4, "ID").Direction = ParameterDirection.Output;
+            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
+                "@EmailCustomer", OleDbType.VarChar, 30, "EmailCustomer");
+            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
+                "@ProductName", OleDbType.VarChar, 30, "ProductName");
+            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
+                "@ProductCode", OleDbType.VarChar, 30, "ProductCode");
+
+            accessDB.Command(@"DELETE FROM Products WHERE ID = @ID");
+            accessDB.DataAdapter.DeleteCommand = accessDB.CommandLast;
+            accessDB.DataAdapter.DeleteCommand.Parameters.Add("@ID", OleDbType.Integer, 4, "ID").
+                SourceVersion = DataRowVersion.Original;
+
+            accessDB.DataAdapter.Fill(accessDB.DataTable);
+            dataGridProducts.DataContext = accessDB.DataTable.DefaultView;
+        }
+
         private void ConnectToDB(object sender, RoutedEventArgs e)
         {
             ConnectToSQLServerDB(e);
@@ -137,7 +190,7 @@ namespace WPF_DataAccess
             ConfigurationManager.ConnectionStrings["connStrAccessDB"].ConnectionString;
             textBlockAccessConnString.Text = connStrAccessDB;
 
-            accessDB = new AccessDB(connStrAccessDB);
+            var accessDB = new AccessDB(connStrAccessDB);
             accessDB.Connection.StateChange +=
                 new StateChangeEventHandler(OnStateChange);
 
@@ -203,7 +256,7 @@ namespace WPF_DataAccess
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataFillError", 
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataFillError",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -227,14 +280,21 @@ namespace WPF_DataAccess
         {
             usersRow = dataGridUsers.SelectedItem as DataRowView;
             usersRow.BeginEdit();
-            //da.Update(dt);
         }
 
         private void dataGridUsers_CurrentCellChanged(object sender, EventArgs e)
         {
             if (usersRow == null) return;
             usersRow.EndEdit();
-            sqlServerDB.DataAdapter.Update(sqlServerDB.DataTable);
+            try
+            {
+                sqlServerDB.DataAdapter.Update(sqlServerDB.DataTable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataUpdateError",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void buttonUsersFormDelete_Click(object sender, RoutedEventArgs e)
@@ -247,8 +307,80 @@ namespace WPF_DataAccess
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataDeleteError", 
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataDeleteError",
                     MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void buttonProductsFormFill_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (accessDB.DataTable != null) accessDB.DataTable.Clear();
+                accessDB.DataAdapter.Fill(accessDB.DataTable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataFillError",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void buttonProductsFormInsert_Click(object sender, RoutedEventArgs e)
+        {
+            DataRow row = accessDB.DataTable.NewRow();
+
+            row["EmailCustomer"] = textBoxCustomerEmail.Text;
+            row["ProductName"] = textBoxProductName.Text;
+            row["ProductCode"] = textBoxProductCode.Text;
+
+            try
+            {
+                accessDB.DataTable.Rows.Add(row);
+                accessDB.DataAdapter.Update(accessDB.DataTable);
+                accessDB.DataTable.Clear();
+                accessDB.DataAdapter.Fill(accessDB.DataTable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataInsertError",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void buttonProductsRowDelete_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                productsRow = dataGridProducts.SelectedItem as DataRowView;
+                productsRow?.Row?.Delete();
+                accessDB.DataAdapter.Update(accessDB.DataTable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataDeleteError",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void dataGridProducts_BeginningEdit(object sender, EventArgs e)
+        {
+            productsRow = dataGridProducts.SelectedItem as DataRowView;
+            productsRow.BeginEdit();
+        }
+
+        private void dataGridProducts_CurrentCellChanged(object sender, EventArgs e)
+        {
+            if (productsRow == null) return;
+            try
+            {
+                productsRow.EndEdit();
+                accessDB.DataAdapter.Update(accessDB.DataTable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataUpdateError",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
