@@ -5,24 +5,13 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Data.OleDb;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Configuration;
 
 namespace WPF_DataAccess
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
+
     public partial class MainWindow : Window
     {
         private SQLServerDB sqlServerDB;
@@ -30,6 +19,9 @@ namespace WPF_DataAccess
 
         private AccessDB accessDB;
         private DataRowView productsRow;
+        private int index;
+
+        private DataSet dataSet;
 
         public MainWindow()
         {
@@ -97,6 +89,8 @@ namespace WPF_DataAccess
             sqlServerDB.Command(@"DELETE FROM Customers WHERE ID = @ID");
             sqlServerDB.DataAdapter.DeleteCommand = sqlServerDB.CommandLast;
             sqlServerDB.DataAdapter.DeleteCommand.Parameters.Add("@ID", SqlDbType.Int, 4, "ID");
+
+            sqlServerDB.DataAdapter.TableMappings.Add("Table", "Customers");
         }
 
         private void PreparingAccessDB()
@@ -108,14 +102,24 @@ namespace WPF_DataAccess
             accessDB.Connection.StateChange +=
                 new StateChangeEventHandler(OnStateChange);
 
-            accessDB.Command(@"SELECT * FROM Products Order By Products.ID");
+            accessDB.Connection.Open();
+            using (var reader = accessDB.Command(@"SELECT Max(ID) FROM Products").ExecuteReader())
+            {
+                reader.Read();
+                index = (int)reader[0];
+            }
+            accessDB.Connection.Close();
+
+            accessDB.Command(@"SELECT * FROM Products ORDER BY Products.ID");
             accessDB.DataAdapter.SelectCommand = accessDB.CommandLast;
 
-            accessDB.Command(@"INSERT INTO Products     ( EmailCustomer,  ProductName,  ProductCode) 
-                                      VALUES            (?, ?, ?)");
+            //accessDB.DataAdapter.MissingSchemaAction = MissingSchemaAction.AddWithKey;
+
+            accessDB.Command(@"INSERT INTO Products (EmailCustomer, ProductName, ProductCode)
+                                      VALUES        (?, ?, ?)");
             accessDB.DataAdapter.InsertCommand = accessDB.CommandLast;
             //accessDB.DataAdapter.InsertCommand.Parameters.Add(
-            //    "@ID", OleDbType.Char, 4, "ID").Direction = ParameterDirection.Output;
+            //    "@ID", OleDbType.Integer, 4, "ID");
             accessDB.DataAdapter.InsertCommand.Parameters.Add(
                 "@EmailCustomer", OleDbType.VarChar, 30, "EmailCustomer");
             accessDB.DataAdapter.InsertCommand.Parameters.Add(
@@ -123,29 +127,28 @@ namespace WPF_DataAccess
             accessDB.DataAdapter.InsertCommand.Parameters.Add(
                 "@ProductCode", OleDbType.VarChar, 30, "ProductCode");
 
-            accessDB.Command(@"UPDATE Products 
+            var updateCommand = accessDB.Command(@"UPDATE Products 
                                   SET 
-                                  EmailCustomer = @EmailCustomer,
-                                  ProductName = @ProductName, 
-                                  ProductCode = @ProductCode
-                                  WHERE ID = @ID");
-            accessDB.DataAdapter.UpdateCommand = accessDB.CommandLast;
-            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
-                "@ID", OleDbType.Integer, 4, "ID").Direction = ParameterDirection.Output;
-            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
-                "@EmailCustomer", OleDbType.VarChar, 30, "EmailCustomer");
-            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
-                "@ProductName", OleDbType.VarChar, 30, "ProductName");
-            accessDB.DataAdapter.UpdateCommand.Parameters.Add(
-                "@ProductCode", OleDbType.VarChar, 30, "ProductCode");
+                                  EmailCustomer = ?,
+                                  ProductName = ?, 
+                                  ProductCode = ?
+                                  WHERE ID = ? ");
+            updateCommand.Parameters.Add("@EmailCustomer", OleDbType.VarChar,
+                30, "EmailCustomer");
+            updateCommand.Parameters.Add("@ProductName", OleDbType.VarChar,
+                30, "ProductName");
+            updateCommand.Parameters.Add("@ProductCode", OleDbType.VarChar,
+                30, "ProductCode");
+            updateCommand.Parameters.Add("@ID", OleDbType.Integer,
+                4, "ID").SourceVersion = DataRowVersion.Original;
+            accessDB.DataAdapter.UpdateCommand = updateCommand;
 
-            accessDB.Command(@"DELETE FROM Products WHERE ID = @ID");
+            accessDB.Command(@"DELETE FROM Products WHERE ID = ?");
             accessDB.DataAdapter.DeleteCommand = accessDB.CommandLast;
             accessDB.DataAdapter.DeleteCommand.Parameters.Add("@ID", OleDbType.Integer, 4, "ID").
                 SourceVersion = DataRowVersion.Original;
 
-            accessDB.DataAdapter.Fill(accessDB.DataTable);
-            dataGridProducts.DataContext = accessDB.DataTable.DefaultView;
+            accessDB.DataAdapter.TableMappings.Add("Table", "Products");
         }
 
         private void ConnectToDB(object sender, RoutedEventArgs e)
@@ -160,11 +163,11 @@ namespace WPF_DataAccess
             string password = textBoxPassword.Password;
             SqlConnectionStringBuilder strConSql = new SqlConnectionStringBuilder()
             {
-                DataSource = "(local)",
+                DataSource = "SERGDEV",
                 //DataSource = @"(localdb)\MSSQLLocalDB",
                 //AttachDBFilename = @"|DataDirectory|\Data\Database1.mdf",
                 InitialCatalog = "SQLServDB",
-                //AttachDBFilename = @"C:\Users\Пк\source\repos\DataAccess\WPF_DataAccess\Data\SQLSeDB.mdf",
+                AttachDBFilename = @"D:\REPOS\DataAccess\WPF_DataAccess\Data\SQLServDB.mdf",
                 IntegratedSecurity = false,
                 UserID = userID, //"user1",
                 Password = password, //"user1"
@@ -263,17 +266,25 @@ namespace WPF_DataAccess
 
         private void buttonUsersFormInsert_Click(object sender, RoutedEventArgs e)
         {
-            DataRow row = sqlServerDB.DataTable.NewRow();
+            try
+            {
+                DataRow row = sqlServerDB.DataTable.NewRow();
 
-            row["FirstName"] = textBoxUserFirstName.Text;
-            row["LastName"] = textBoxUserLastName.Text;
-            int phoneNumber;
-            Int32.TryParse(textBoxUserPhone.Text, out phoneNumber);
-            row["PhoneNumber"] = phoneNumber;
-            row["Email"] = textBoxUserEmail.Text;
+                row["FirstName"] = textBoxUserFirstName.Text;
+                row["LastName"] = textBoxUserLastName.Text;
+                int phoneNumber;
+                Int32.TryParse(textBoxUserPhone.Text, out phoneNumber);
+                row["PhoneNumber"] = phoneNumber;
+                row["Email"] = textBoxUserEmail.Text;
 
-            sqlServerDB.DataTable.Rows.Add(row);
-            sqlServerDB.DataAdapter.Update(sqlServerDB.DataTable);
+                sqlServerDB.DataTable.Rows.Add(row);
+                sqlServerDB.DataAdapter.Update(sqlServerDB.DataTable);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataInsertError",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void dataGridUsers_BeginningEdit(object sender, EventArgs e)
@@ -318,6 +329,7 @@ namespace WPF_DataAccess
             {
                 if (accessDB.DataTable != null) accessDB.DataTable.Clear();
                 accessDB.DataAdapter.Fill(accessDB.DataTable);
+                dataGridProducts.DataContext = accessDB.DataTable.DefaultView;
             }
             catch (Exception ex)
             {
@@ -328,24 +340,51 @@ namespace WPF_DataAccess
 
         private void buttonProductsFormInsert_Click(object sender, RoutedEventArgs e)
         {
-            DataRow row = accessDB.DataTable.NewRow();
+            #region MainVariant
 
-            row["EmailCustomer"] = textBoxCustomerEmail.Text;
-            row["ProductName"] = textBoxProductName.Text;
-            row["ProductCode"] = textBoxProductCode.Text;
+            //DataRow row = accessDB.DataTable.NewRow();
 
-            try
-            {
-                accessDB.DataTable.Rows.Add(row);
-                accessDB.DataAdapter.Update(accessDB.DataTable);
-                accessDB.DataTable.Clear();
-                accessDB.DataAdapter.Fill(accessDB.DataTable);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataInsertError",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            //row["EmailCustomer"] = textBoxCustomerEmail.Text;
+            //row["ProductName"] = textBoxProductName.Text;
+            //row["ProductCode"] = textBoxProductCode.Text;
+
+            //try
+            //{
+            //    accessDB.DataTable.Rows.Add(row);
+            //    accessDB.DataAdapter.Update(accessDB.DataTable);
+            //    accessDB.DataTable.Clear();
+            //    accessDB.DataAdapter.Fill(accessDB.DataTable);
+            //}
+            //catch (Exception ex)
+            //{
+            //    MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataInsertError",
+            //        MessageBoxButton.OK, MessageBoxImage.Error);
+            //}
+
+            #endregion
+
+            #region SecondVariant
+
+            accessDB.Connection.Open();
+            var insert = accessDB.Command(@"INSERT INTO Products     ( ID, EmailCustomer,  ProductName,  ProductCode) 
+                                      VALUES            (?, ?, ?, ?)");
+            insert.Parameters.AddWithValue("@ID", ++index);
+            insert.Parameters.AddWithValue("@EmailCustomer", textBoxCustomerEmail.Text);
+            insert.Parameters.AddWithValue("@ProductName", textBoxProductName.Text);
+            insert.Parameters.AddWithValue("@ProductCode", textBoxProductCode.Text);
+            var num = insert.ExecuteNonQuery();
+            accessDB.Connection.Close();
+
+            #endregion
+
+            #region ThirdVariant
+
+            //accessDB.Connection.Open();
+            //var num = accessDB.Command(@"INSERT INTO Products ( EmailCustomer,  ProductName,  ProductCode) 
+            //                             VALUES               ('Fedor', 'bbb', 'ccc')").ExecuteNonQuery();
+            //accessDB.Connection.Close();
+
+            #endregion
         }
 
         private void buttonProductsRowDelete_Click(object sender, RoutedEventArgs e)
@@ -382,6 +421,31 @@ namespace WPF_DataAccess
                 MessageBox.Show($"{ex.Message} {ex.StackTrace}", "DataUpdateError",
                         MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void buttonRelation_Click(object sender, EventArgs e)
+        {
+            dataSet = new DataSet();
+            sqlServerDB.DataAdapter.Fill(dataSet);
+            accessDB.DataAdapter.Fill(dataSet);
+
+            //dataSet.Tables["Customers"].PrimaryKey = 
+            //    new DataColumn[] { dataSet.Tables["Customers"].Columns["Email"] };
+            //dataSet.Tables["Products"].PrimaryKey =
+            //    new DataColumn[] { dataSet.Tables["Products"].Columns["EmailCustomer"] };
+
+            DataColumn parentColumn = dataSet.Tables["Customers"].Columns["Email"];
+            DataColumn childColumn = dataSet.Tables["Products"].Columns["EmailCustomer"];
+            var relation = new DataRelation("ProductsCustomers", parentColumn, childColumn);
+            dataSet.Relations.Add(relation);
+
+            dataGridUsers.ItemsSource = dataSet.Tables["Customers"].DefaultView;
+            dataGridProducts.ItemsSource = dataSet.Tables["Products"].DefaultView;
+
+            var relationWindow = new RelationWindow();
+            relationWindow.dataGrid.ItemsSource = dataSet.Tables["Customers"].DefaultView;
+            relationWindow.Owner = this;
+            relationWindow.Show();
         }
     }
 }

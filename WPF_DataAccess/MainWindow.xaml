@@ -36,7 +36,7 @@
                 <TextBlock x:Name="textBlockAccessConnState" FontWeight="Bold" Margin="5 5 5 5"/>
             </WrapPanel>
         </StackPanel>
-        
+
         <StackPanel Grid.Column="0" Grid.Row="1" Margin="5 5 5 5">
             <TextBlock Text="Enter userID:" Margin="5 5 5 5"/>
             <TextBlock Text="Enter password:" Margin="5 5 5 5" />
@@ -82,82 +82,90 @@
             <TextBox x:Name="textBoxUserEmail" MinWidth="100" Margin="5 5 5 5" />
         </StackPanel>
 
-        <StackPanel Grid.Column="3" Grid.Row="1" Margin="5 5 5 5">
-            <Button x:Name="buttonUsersFormFill" Content="FILL" Margin="5 5 5 5"
+        <StackPanel Grid.Column="2" Grid.Row="1" Margin="5 5 5 5">
+            <TextBlock Text="Create relations between two tables and show new table." 
+                       TextWrapping="Wrap" Margin="5 5 5 5"/>
+            <Button x:Name="buttonRelation" Content="CREATE" Margin="5 5 5 5"
+                    VerticalAlignment="Center" Width="100" 
+                    Click="buttonRelation_Click"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Grid.Row="1" Margin="5 5 5 5">
+                <Button x:Name="buttonUsersFormFill" Content="FILL" Margin="5 5 5 5"
                     VerticalAlignment="Center" Width="100" 
                     Click="buttonUsersFormFill_Click"/>
-            <Button x:Name="buttonUsersFormInsert" Content="INSERT" Margin="5 5 5 5"
+                <Button x:Name="buttonUsersFormInsert" Content="INSERT" Margin="5 5 5 5"
                     HorizontalAlignment="Center" Width="100" Click="buttonUsersFormInsert_Click"/>
-            <Button x:Name="buttonUsersRowDelete" Content="DELETE" Margin="5 5 5 5"
+                <Button x:Name="buttonUsersRowDelete" Content="DELETE" Margin="5 5 5 5"
                     HorizontalAlignment="Center" Width="100" Click="buttonUsersFormDelete_Click"/>
-        </StackPanel>
-        
-        <Border Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
+            </StackPanel>
+
+            <Border Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="0" Grid.RowSpan="2"
                 BorderBrush="Black" BorderThickness="0.5" CornerRadius="10"
                 Margin="5 5 5 5"/>
 
-        <StackPanel Grid.Column="2" Grid.Row="2" Margin="5 5 5 5">
-            <TextBlock Text="Enter user Email:" Margin="5 5 5 5"/>
-            <TextBlock Text="Enter product Name:" Margin="5 5 5 5"/>
-            <TextBlock Text="Enter product Code:" Margin="5 5 5 5"/>
-        </StackPanel>
+            <StackPanel Grid.Column="2" Grid.Row="2" Margin="5 5 5 5">
+                <TextBlock Text="Enter user Email:" Margin="5 5 5 5"/>
+                <TextBlock Text="Enter product Name:" Margin="5 5 5 5"/>
+                <TextBlock Text="Enter product Code:" Margin="5 5 5 5"/>
+            </StackPanel>
 
-        <StackPanel Grid.Column="3" Grid.Row="2" Margin="5 5 5 5">
-            <TextBox x:Name="textBoxCustomerEmail" MinWidth="100" Margin="5 5 5 5" />
-            <TextBox x:Name="textBoxProductName" MinWidth="100" Margin="5 5 5 5" />
-            <TextBox x:Name="textBoxProductCode" MinWidth="100" Margin="5 5 5 5" />
-        </StackPanel>
+            <StackPanel Grid.Column="3" Grid.Row="2" Margin="5 5 5 5">
+                <TextBox x:Name="textBoxCustomerEmail" MinWidth="100" Margin="5 5 5 5" />
+                <TextBox x:Name="textBoxProductName" MinWidth="100" Margin="5 5 5 5" />
+                <TextBox x:Name="textBoxProductCode" MinWidth="100" Margin="5 5 5 5" />
+            </StackPanel>
 
-        <StackPanel Grid.Column="3" Grid.Row="3" Margin="5 5 5 5">
-            <Button x:Name="buttonProductsFormFill" Content="REFRESH" Margin="5 5 5 5"
+            <StackPanel Grid.Column="3" Grid.Row="3" Margin="5 5 5 5">
+                <Button x:Name="buttonProductsFormFill" Content="REFRESH" Margin="5 5 5 5"
                     VerticalAlignment="Center" Width="100" Click="buttonProductsFormFill_Click"/>
-            <Button x:Name="buttonProductsFormInsert" Content="INSERT" Margin="5 5 5 5"
+                <Button x:Name="buttonProductsFormInsert" Content="INSERT" Margin="5 5 5 5"
                     HorizontalAlignment="Center" Width="100" Click="buttonProductsFormInsert_Click"/>
-            <Button x:Name="buttonProductsRowDelete" Content="DELETE" Margin="5 5 5 5"
+                <Button x:Name="buttonProductsRowDelete" Content="DELETE" Margin="5 5 5 5"
                     HorizontalAlignment="Center" Width="100" Click="buttonProductsRowDelete_Click"/>
-        </StackPanel>
+            </StackPanel>
 
-        <Border Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2" Grid.RowSpan="2"
+            <Border Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2" Grid.RowSpan="2"
                 BorderBrush="Black" BorderThickness="0.5" CornerRadius="10"
                 Margin="5 5 5 5"/>
 
-        
-        <DataGrid x:Name="dataGridUsers" Margin="5 5 5 5"
+
+            <DataGrid x:Name="dataGridUsers" Margin="5 5 5 5"
                   Grid.Column="4" Grid.ColumnSpan="4" Grid.Row="0" Grid.RowSpan="2"
                   AutoGenerateColumns="False" ItemsSource="{Binding}"
                   BeginningEdit="dataGridUsers_BeginningEdit" 
                   CurrentCellChanged="dataGridUsers_CurrentCellChanged">
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding ID}" 
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding ID}" 
                                     Header="id" IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding FirstName}" 
+                    <DataGridTextColumn Binding="{Binding FirstName}" 
                                     Header="user name"/>
-                <DataGridTextColumn Binding="{Binding LastName}" 
+                    <DataGridTextColumn Binding="{Binding LastName}" 
                                     Header="user last name"/>
-                <DataGridTextColumn Binding="{Binding PhoneNumber}" 
+                    <DataGridTextColumn Binding="{Binding PhoneNumber}" 
                                     Header="phone number"/>
-                <DataGridTextColumn Binding="{Binding Email}" 
+                    <DataGridTextColumn Binding="{Binding Email}" 
                                     Header="email"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                </DataGrid.Columns>
+            </DataGrid>
 
-        
-        <DataGrid x:Name="dataGridProducts" Margin="5 5 5 5"
+
+            <DataGrid x:Name="dataGridProducts" Margin="5 5 5 5"
                   Grid.Column="4" Grid.ColumnSpan="4" Grid.Row="2" Grid.RowSpan="2"
                   AutoGenerateColumns="False" ItemsSource="{Binding}"
                   BeginningEdit="dataGridProducts_BeginningEdit" 
                   CurrentCellChanged="dataGridProducts_CurrentCellChanged">
-            <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding ID}" 
+                <DataGrid.Columns>
+                    <DataGridTextColumn Binding="{Binding ID}" 
                                     Header="id" IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding EmailCustomer}" 
+                    <DataGridTextColumn Binding="{Binding EmailCustomer}" 
                                     Header="email customer"/>
-                <DataGridTextColumn Binding="{Binding ProductName}" 
+                    <DataGridTextColumn Binding="{Binding ProductName}" 
                                     Header="product name"/>
-                <DataGridTextColumn Binding="{Binding ProductCode}" 
+                    <DataGridTextColumn Binding="{Binding ProductCode}" 
                                     Header="product code"/>
-            </DataGrid.Columns>
-        </DataGrid>
+                </DataGrid.Columns>
+            </DataGrid>
 
     </Grid>
 </Window>

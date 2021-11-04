@@ -22,6 +22,7 @@ namespace DataControllers
             {
                 DataSource = "(local)",
                 InitialCatalog = "SQLServDB",
+                AttachDBFilename = @"D:\REPOS\DataAccess\WPF_DataAccess\Data\SQLServDB.mdf",
                 IntegratedSecurity = false,
                 UserID = conStrLogin, //"user1",
                 Password = conStrPassword, //"user1"
